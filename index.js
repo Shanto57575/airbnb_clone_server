@@ -21,7 +21,6 @@ const client = new MongoClient(uri, {
 
 async function run() {
     try {
-        // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
 
         const airbnbCollection = client.db("airbnb").collection("airbnbInfo");
@@ -31,6 +30,36 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result);
         })
+
+        app.get('/categories/:category', async (req, res) => {
+            const category = req.params.category;
+
+            let query = {};
+
+            if (category !== "room") {
+                query = { category: category }
+            }
+
+            const options = {
+                projection: {
+                    category: 1,
+                    hostName: 1,
+                    img: 1,
+                    destination: 1,
+                    price: {
+                        $toDouble: "$price"
+                    },
+                    time: 1,
+                    rating: 1,
+                }
+            }
+
+
+            const result = await airbnbCollection.find(query, options).toArray();
+            res.send(result);
+        })
+
+
 
         // Send a ping to confirm a successful connection
 
